@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Belajar React Js</title>
+    <script src="https://unpkg.com/react@17.0.2/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      function Header(props) {
+        return (<h1>Hello World {props.tes}</h1>);
+      }
+
+      function HomePage() {
+        const [likes, setLikes] = React.useState(0);
+
+        function handleClick() {
+          setLikes(likes + 1);
+        }
+        return (
+          <div>
+            <Header tes="inpo"/>
+            <p>Belajar React Js</p>
+            <button onClick={handleClick}> Like ({likes})</button>
+          </div>
+        );
+      }
+
+      ReactDOM.render(<HomePage />, document.getElementById("root"));
+    </script>
+  </body>
+</html>
