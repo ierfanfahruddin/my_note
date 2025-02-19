@@ -217,7 +217,7 @@ $endTime = number_format($endTime, 2, '.', '');
 
             <div class="col-9 offset-3">
               <button class="btn btn-info mt-2" id="update-x-axis">Update Jam</button>
-              <button type="button" class="btn btn-default" data-bs-dismiss="modal"><?= _icon('cancel') ?> Tutup</button>
+              <button type="button" class="btn btn-default" data-bs-dismiss="modal"> Tutup</button>
             </div>
           </div>
         </div>
