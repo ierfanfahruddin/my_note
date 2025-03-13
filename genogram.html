@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genogram 3 Generasi dengan Input Tambahan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .form-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #genogram {
+            border: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        .node text {
+            font-size: 12px;
+            text-anchor: middle;
+        }
+        .link {
+            stroke: #999;
+            stroke-width: 2px;
+        }
+        .marriage {
+            stroke: #000;
+            stroke-width: 1px;
+            stroke-dasharray: 5,5;
+        }
+        .deceased {
+            stroke: red;
+            stroke-width: 2px;
+        }
+        .client {
+            stroke: green;
+            stroke-width: 2px;
+        }
+        .mental {
+            fill: yellow;
+        }
+    </style>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <h2>Genogram 3 Generasi</h2>
+    
+    <div class="form-container">
+        <!-- Form untuk tambah anggota -->
+        <div>
+            <h3>Tambah Anggota</h3>
+            <form id="personForm">
+                <div class="form-group">
+                    <label for="name">Nama:</label>
+                    <input type="text" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Jenis Kelamin:</label>
+                    <select id="gender" required>
+                        <option value="">Pilih</option>
+                        <option value="M">Laki-laki</option>
+                        <option value="F">Perempuan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="generation">Generasi:</label>
+                    <select id="generation" required>
+                        <option value="">Pilih</option>
+                        <option value="1">Generasi 1</option>
+                        <option value="2">Generasi 2</option>
+                        <option value="3">Generasi 3</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="deceased">Meninggal:</label>
+                    <select id="deceased" required>
+                        <option value="false">Tidak</option>
+                        <option value="true">Ya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="livingTogether">Tinggal Serumah:</label>
+                    <select id="livingTogether" required>
+                        <option value="false">Tidak</option>
+                        <option value="true">Ya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="client">Klien:</label>
+                    <select id="client" required>
+                        <option value="false">Tidak</option>
+                        <option value="true">Ya</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="mentalDisorder">Gangguan Jiwa:</label>
+                    <select id="mentalDisorder" required>
+                        <option value="false">Tidak</option>
+                        <option value="true">Ya</option>
+                    </select>
+                </div>
+                <button type="submit">Tambah Anggota</button>
+            </form>
+        </div>
+
+        <!-- Form untuk tambah hubungan -->
+        <div>
+            <h3>Tambah Hubungan</h3>
+            <form id="relationForm">
+                <div class="form-group">
+                    <label for="source">Dari:</label>
+                    <select id="source" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="target">Ke:</label>
+                    <select id="target" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="type">Jenis Hubungan:</label>
+                    <select id="type" required>
+                        <option value="">Pilih</option>
+                        <option value="marriage">Pernikahan</option>
+                        <option value="parent">Orang Tua-Anak</option>
+                    </select>
+                </div>
+                <button type="submit">Tambah Hubungan</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="genogram"></div>
+
+    <script>
+        // Data genogram
+        let genogramData = {
+            nodes: [],
+            links: []
+        };
+
+        let nextId = 1;
+
+        // Setup SVG
+        const width = 800;
+        const height = 400;
+        const svg = d3.select("#genogram")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Tangkap form anggota
+        document.getElementById('personForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const person = {
+                id: nextId++,
+                name: document.getElementById('name').value,
+                gender: document.getElementById('gender').value,
+                generation: parseInt(document.getElementById('generation').value),
+                deceased: document.getElementById('deceased').value === "true",
+                livingTogether: document.getElementById('livingTogether').value === "true",
+                client: document.getElementById('client').value === "true",
+                mentalDisorder: document.getElementById('mentalDisorder').value === "true"
+            };
+            genogramData.nodes.push(person);
+            updateGraph();
+            updateSelectOptions();
+            this.reset();
+        });
+
+        // Tangkap form hubungan
+        document.getElementById('relationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const link = {
+                source: parseInt(document.getElementById('source').value),
+                target: parseInt(document.getElementById('target').value),
+                type: document.getElementById('type').value
+            };
+            genogramData.links.push(link);
+            updateGraph();
+            this.reset();
+        });
+
+        // Update opsi select untuk hubungan
+        function updateSelectOptions() {
+            const sourceSelect = document.getElementById('source');
+            const targetSelect = document.getElementById('target');
+            sourceSelect.innerHTML = '<option value="">Pilih</option>';
+            targetSelect.innerHTML = '<option value="">Pilih</option>';
+
+            genogramData.nodes.forEach(node => {
+                const option = `<option value="${node.id}">${node.name}</option>`;
+                sourceSelect.innerHTML += option;
+                targetSelect.innerHTML += option;
+            });
+        }
+
+        // Posisi node
+        function positionNodes(nodes) {
+            const generationHeight = height / 4;
+            const nodesByGeneration = {};
+            
+            nodes.forEach(node => {
+                if (!nodesByGeneration[node.generation]) {
+                    nodesByGeneration[node.generation] = [];
+                }
+                nodesByGeneration[node.generation].push(node);
+            });
+
+            for (let gen in nodesByGeneration) {
+                const genNodes = nodesByGeneration[gen];
+                const spacing = width / (genNodes.length + 1);
+                genNodes.forEach((node, i) => {
+                    node.x = spacing * (i + 1);
+                    node.y = (gen - 1) * generationHeight + 50;
+                });
+            }
+        }
+
+        // Update grafik
+        function updateGraph() {
+            positionNodes(genogramData.nodes);
+
+            // Hapus elemen lama
+            svg.selectAll("*").remove();
+
+            // Gambar garis hubungan
+            svg.selectAll(".link")
+                .data(genogramData.links)
+                .enter()
+                .append("line")
+                .attr("class", d => d.type === "marriage" ? "marriage" : "link")
+                .attr("x1", d => genogramData.nodes.find(n => n.id === d.source).x)
+                .attr("y1", d => genogramData.nodes.find(n => n.id === d.source).y)
+                .attr("x2", d => genogramData.nodes.find(n => n.id === d.target).x)
+                .attr("y2", d => genogramData.nodes.find(n => n.id === d.target).y);
+
+            // Gambar node
+            const node = svg.selectAll(".node")
+                .data(genogramData.nodes)
+                .enter()
+                .append("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+
+            node.each(function(d) {
+                const group = d3.select(this);
+                const baseFill = d.gender === "M" ? "lightblue" : "pink";
+                const fill = d.mentalDisorder ? "yellow" : baseFill;
+
+                if (d.gender === "M") {
+                    group.append("rect")
+                        .attr("x", -20)
+                        .attr("y", -20)
+                        .attr("width", 40)
+                        .attr("height", 40)
+                        .attr("fill", fill)
+                        .attr("stroke", d.deceased ? "red" : (d.client ? "green" : "black"))
+                        .attr("stroke-width", d.deceased || d.client ? 2 : 1);
+                } else {
+                    group.append("circle")
+                        .attr("r", 20)
+                        .attr("fill", fill)
+                        .attr("stroke", d.deceased ? "red" : (d.client ? "green" : "black"))
+                        .attr("stroke-width", d.deceased || d.client ? 2 : 1);
+                }
+
+                // Nama
+                group.append("text")
+                    .attr("dy", "5")
+                    .text(d => d.name);
+
+                // Simbol tinggal serumah (kotak kecil di kanan)
+                if (d.livingTogether) {
+                    group.append("rect")
+                        .attr("x", 20)
+                        .attr("y", -5)
+                        .attr("width", 10)
+                        .attr("height", 10)
+                        .attr("fill", "none")
+                        .attr("stroke", "black");
+                }
+            });
+        }
+
+        // Inisialisasi opsi select
+        updateSelectOptions();
+    </script>
+</body>
+</html>
