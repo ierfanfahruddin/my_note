@@ -1,0 +1,168 @@
+/* Container utama untuk centering */
+.weather-container {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  padding: 20px;
+}
+
+/* Kartu cuaca dengan efek glassmorphism */
+.weather-card {
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease;
+}
+
+.weather-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Search bar */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.search-bar input {
+  flex: 1;
+  height: 45px;
+  border: none;
+  outline: none;
+  border-radius: 25px;
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  font-size: 16px;
+  transition: box-shadow 0.3s ease;
+}
+
+.search-bar input:focus {
+  box-shadow: 0 0 10px rgba(80, 10, 228, 0.5);
+}
+
+.search-bar img {
+  width: 40px;
+  padding: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.search-bar img:hover {
+  background: #fff;
+}
+
+/* Weather info */
+.weather-info {
+  text-align: center;
+  color: #fff;
+}
+
+.weather-icon {
+  width: 120px;
+  margin: 20px 0;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.temp-location {
+  margin-bottom: 20px;
+}
+
+.temperature {
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+}
+
+.location {
+  font-size: 28px;
+  font-weight: 300;
+  margin: 5px 0 0;
+}
+
+/* Weather details */
+.weather-details {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 20px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+}
+
+.detail-item img {
+  width: 40px;
+  opacity: 0.9;
+}
+
+.detail-item p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.detail-item span {
+  display: block;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Not found message */
+.not-found {
+  color: #fff;
+  font-size: 20px;
+  text-align: center;
+  padding: 20px;
+  opacity: 0.8;
+}
+
+/* Animasi */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsif */
+@media (max-width: 480px) {
+  .weather-card {
+    padding: 20px;
+    max-width: 100%;
+  }
+  .temperature {
+    font-size: 48px;
+  }
+  .location {
+    font-size: 24px;
+  }
+  .weather-icon {
+    width: 100px;
+  }
+  .weather-details {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
