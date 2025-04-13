@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion"; // Impor Framer Motion
 import "./Weather.css";
 import search_icon from "../assets/search.png";
 import clear_icon from "../assets/clear.png";
@@ -42,7 +43,9 @@ function Weather() {
     setWeatherData(null);
     setError(null);
     try {
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${import.meta.env.VITE_APP_KEY}`;
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${
+        import.meta.env.VITE_APP_KEY
+      }`;
       const response = await fetch(url);
       const data = await response.json();
       if (!response.ok) {
@@ -76,53 +79,143 @@ function Weather() {
     }
   };
 
+  const getWeatherAnimation = (condition) => {
+    switch (condition) {
+      case "Rain":
+        return {
+          y: [0, 5, 0],
+          transition: { repeat: Infinity, duration: 0.5 },
+        };
+      case "Snow":
+        return {
+          rotate: [0, 10, -10, 0],
+          transition: { repeat: Infinity, duration: 1 },
+        };
+      default:
+        return {
+          scale: [1, 1.1, 1],
+          transition: { repeat: Infinity, duration: 2 },
+        };
+    }
+  };
+
   return (
-    <div className="weather-container">
-      <div className="weather-card">
-        <div className="search-bar">
+    <motion.div
+      className="weather-container"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        className="weather-card"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <motion.div
+          className="search-bar"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 300 }}
+        >
           <input
             type="text"
             ref={inputRef}
             placeholder="Search for a city..."
             onKeyDown={handleKeyDown}
           />
-          <img
+          <motion.img
             src={search_icon}
             alt="Search city"
             onClick={() => searchWeather(inputRef.current.value)}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
           />
-        </div>
-        {isLoading ? (
-          <div className="loading">Loading...</div>
-        ) : !weatherData ? (
-          <div className="not-found">{error || "City not found"}</div>
-        ) : (
-          <div className="weather-info">
-            <img src={weatherData.icon} alt="Weather condition" className="weather-icon" />
-            <div className="temp-location">
-              <p className="temperature">{weatherData.temperature}°C</p>
-              <p className="location">{weatherData.location}</p>
-            </div>
-            <div className="weather-details">
-              <div className="detail-item">
-                <img src={humidity_icon} alt="Humidity icon" />
-                <div>
-                  <p>{weatherData.humidity}%</p>
-                  <span>Humidity</span>
-                </div>
-              </div>
-              <div className="detail-item">
-                <img src={wind_icon} alt="Wind speed icon" />
-                <div>
-                  <p>{weatherData.windSpeed} m/s</p>
-                  <span>Wind Speed</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+        </motion.div>
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+            <motion.div
+              key="loading"
+              className="loading"
+              initial={{ opacity: 0, rotate: 0 }}
+              animate={{ opacity: 1, rotate: 360 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                duration: 0.5,
+                repeat: Infinity,
+                repeatType: "loop",
+              }}
+            >
+              Loading...
+            </motion.div>
+          ) : !weatherData ? (
+            <motion.div
+              key="error"
+              className="not-found"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {error || "City not found"}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="weather"
+              className="weather-info"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              <motion.img
+                src={weatherData.icon}
+                animate={getWeatherAnimation(weatherData.weatherCondition)}
+                whileTap={{ scale: 0.95 }}
+              />
+              <motion.div
+                className="temp-location"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+              >
+                <p className="temperature">{weatherData.temperature}°C</p>
+                <p className="location">{weatherData.location}</p>
+              </motion.div>
+              <motion.div
+                className="weather-details"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
+              >
+                <motion.div
+                  className="detail-item"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <img src={humidity_icon} alt="Humidity icon" />
+                  <div>
+                    <p>{weatherData.humidity}%</p>
+                    <span>Humidity</span>
+                  </div>
+                </motion.div>
+                <motion.div
+                  className="detail-item"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  <img src={wind_icon} alt="Wind speed icon" />
+                  <div>
+                    <p>{weatherData.windSpeed} m/s</p>
+                    <span>Wind Speed</span>
+                  </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>
   );
 }
 

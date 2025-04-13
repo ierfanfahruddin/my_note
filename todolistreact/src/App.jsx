@@ -1,67 +1,74 @@
-import { useRef, useState } from "react";
-import "./App.css";
-import Form from "./component/Form";
-import ToDoList from "./component/ToDoList";
+import { useState, useCallback } from 'react';
+import './App.css';
+import Form from './component/Form';
+import ToDoList from './component/ToDoList';
 
 function App() {
-  const setTask = useRef('');
   const [tasks, setTasks] = useState([]);
+  const [sortBy, setSortBy] = useState('name'); // 'name' atau 'completed'
 
-  function addTask(e) {
-    e.preventDefault()
-    if (setTask.current.value === '') {
-      alert('Please enter a task');
-      return;
-    }
-    const taskName = setTask.current.value.trim();
+  const addTask = useCallback((taskName) => {
+    const trimmedTask = taskName.trim();
+    if (!trimmedTask) return false;
+
     const isDuplicate = tasks.some(
-      (task) => task.task.toLowerCase() === taskName.toLowerCase()
+      (task) => task.task.toLowerCase() === trimmedTask.toLowerCase()
     );
+    if (isDuplicate) return false;
 
-    if (isDuplicate) {
-      alert('Task already exists!');
-      setTask.current.value = '';
-      return;
-    }
-    
-    const task = {
-      id: Date.now(),
-      task: setTask.current.value,
-      completed: false
-    }
-    setTask.current.value = '';
-    setTasks([...tasks, task]);
-  }
+    const newTask = {
+      id: crypto.randomUUID(), // Lebih aman daripada Date.now()
+      task: trimmedTask,
+      completed: false,
+    };
+    setTasks((prev) => [...prev, newTask]);
+    return true;
+  }, [tasks]);
 
-  function setCompleted(id){
-    let taskItem = [];
+  const toggleCompleted = useCallback((id) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
+  }, []);
 
-    tasks.map((item) => {
-      if (item.id === id) {
-        item.completed = !item.completed;
-      }
-      taskItem.push(item);
-    })
-    setTasks(taskItem);
-  }
+  const removeTask = useCallback((id) => {
+    setTasks((prev) => prev.filter((task) => task.id !== id));
+  }, []);
 
-  function remove(id){
-    if(window.confirm('Inpo?')){
-      setTasks(tasks.filter((item)=> item.id != id))
-    }
-  }
+  const editTask = useCallback((id, newTaskName) => {
+    const trimmedTask = newTaskName.trim();
+    if (!trimmedTask) return false;
 
+    const isDuplicate = tasks.some(
+      (task) => task.id !== id && task.task.toLowerCase() === trimmedTask.toLowerCase()
+    );
+    if (isDuplicate) return false;
+
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === id ? { ...task, task: trimmedTask } : task
+      )
+    );
+    return true;
+  }, [tasks]);
 
   return (
-    <>
-      <Form addTask={addTask} setTask={setTask} />
-      <ToDoList tasks={tasks} setCompleted={setCompleted} remove={remove} />
+    <div className="app-container">
+      <Form addTask={addTask} />
+      <ToDoList
+        tasks={tasks}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        toggleCompleted={toggleCompleted}
+        removeTask={removeTask}
+        editTask={editTask}
+      />
       <footer>
-        <center>
-          <p>©2025 All rights reserved</p>
-        </center>
+        <p>© {new Date().getFullYear()} All rights reserved</p>
       </footer>
-    </>
+    </div>
   );
 }
 
